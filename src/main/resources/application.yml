@@ -1,0 +1,19 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: traceability-service
+  mvc:
+    problemdetails:
+      enabled: true
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/traceability_db}
+    username: ${SPRING_DATASOURCE_USERNAME:foodcourt}
+    password: ${SPRING_DATASOURCE_PASSWORD:foodcourt}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
