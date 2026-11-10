@@ -17,3 +17,10 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+
+foodcourt:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    jwt-ttl: ${JWT_TTL:PT8H}
+  clients:
+    user-service-url: ${USER_SERVICE_URL:http://localhost:8081}
