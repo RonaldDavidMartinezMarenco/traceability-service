@@ -17,11 +17,20 @@ public class RestClientConfig {
 
     @Bean
     RestClient userServiceClient(ServiceClientsProperties clients, BearerTokenRelay bearerTokenRelay) {
+        return client(clients.userServiceUrl(), bearerTokenRelay);
+    }
+
+    @Bean
+    RestClient plazaServiceClient(ServiceClientsProperties clients, BearerTokenRelay bearerTokenRelay) {
+        return client(clients.plazaServiceUrl(), bearerTokenRelay);
+    }
+
+    private static RestClient client(String baseUrl, BearerTokenRelay bearerTokenRelay) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(CONNECT_TIMEOUT);
         factory.setReadTimeout(READ_TIMEOUT);
         return RestClient.builder()
-                .baseUrl(clients.userServiceUrl())
+                .baseUrl(baseUrl)
                 .requestFactory(factory)
                 .requestInterceptor(bearerTokenRelay)
                 .build();

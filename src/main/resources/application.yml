@@ -24,3 +24,4 @@ foodcourt:
     jwt-ttl: ${JWT_TTL:PT8H}
   clients:
     user-service-url: ${USER_SERVICE_URL:http://localhost:8081}
+    plaza-service-url: ${PLAZA_SERVICE_URL:http://localhost:8082}
