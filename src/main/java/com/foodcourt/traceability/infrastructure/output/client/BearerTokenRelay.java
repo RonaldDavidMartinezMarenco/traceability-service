@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-/** Copies the caller's bearer token onto the request to user-service. */
+/** Copies the caller's bearer token onto the outbound request. */
 @Component
 public final class BearerTokenRelay implements ClientHttpRequestInterceptor {
 

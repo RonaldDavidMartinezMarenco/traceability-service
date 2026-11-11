@@ -12,8 +12,11 @@ import com.foodcourt.traceability.domain.exception.AccountDirectoryUnavailable;
 import com.foodcourt.traceability.domain.exception.AccountNotFound;
 import com.foodcourt.traceability.domain.exception.AuthenticationRequired;
 import com.foodcourt.traceability.domain.exception.IllegalStatusTransition;
+import com.foodcourt.traceability.domain.exception.InvalidPageRequest;
 import com.foodcourt.traceability.domain.exception.InvalidTraceRequest;
 import com.foodcourt.traceability.domain.exception.OrderTraceNotFound;
+import com.foodcourt.traceability.domain.exception.RestaurantDirectoryUnavailable;
+import com.foodcourt.traceability.domain.exception.RestaurantNotFound;
 import com.foodcourt.traceability.domain.exception.TraceConflict;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,6 +44,11 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "Invalid request", exception, request);
     }
 
+    @ExceptionHandler(InvalidPageRequest.class)
+    ProblemDetail invalidPage(InvalidPageRequest exception, HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid page", exception, request);
+    }
+
     @ExceptionHandler(InvalidTraceRequest.class)
     ProblemDetail invalidTrace(InvalidTraceRequest exception, HttpServletRequest request) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid trace", exception, request);
@@ -49,6 +57,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(OrderTraceNotFound.class)
     ProblemDetail missingTrace(OrderTraceNotFound exception, HttpServletRequest request) {
         return problem(HttpStatus.NOT_FOUND, "Order trace not found", exception, request);
+    }
+
+    @ExceptionHandler(RestaurantNotFound.class)
+    ProblemDetail missingRestaurant(RestaurantNotFound exception, HttpServletRequest request) {
+        return problem(HttpStatus.NOT_FOUND, "Restaurant not found", exception, request);
     }
 
     @ExceptionHandler(AccountNotFound.class)
@@ -64,6 +77,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(TraceConflict.class)
     ProblemDetail traceConflict(TraceConflict exception, HttpServletRequest request) {
         return problem(HttpStatus.CONFLICT, "Status already recorded", exception, request);
+    }
+
+    @ExceptionHandler(RestaurantDirectoryUnavailable.class)
+    ProblemDetail plazaDown(RestaurantDirectoryUnavailable exception, HttpServletRequest request) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "Plaza service unavailable", exception, request);
     }
 
     @ExceptionHandler(AccountDirectoryUnavailable.class)

@@ -1,17 +1,27 @@
 package com.foodcourt.traceability.infrastructure.output.jpa.adapter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.foodcourt.traceability.domain.exception.TraceConflict;
+import com.foodcourt.traceability.domain.model.CompletedInterval;
+import com.foodcourt.traceability.domain.model.EmployeeTotal;
+import com.foodcourt.traceability.domain.model.PageQuery;
+import com.foodcourt.traceability.domain.model.PageResult;
 import com.foodcourt.traceability.domain.model.SaveResult;
 import com.foodcourt.traceability.domain.model.StatusChange;
 import com.foodcourt.traceability.domain.spi.StatusChangeRepository;
 import com.foodcourt.traceability.infrastructure.output.jpa.mapper.OrderStatusChangeJpaMapper;
+import com.foodcourt.traceability.infrastructure.output.jpa.projection.CompletedIntervalRow;
+import com.foodcourt.traceability.infrastructure.output.jpa.projection.EmployeeTotalRow;
 import com.foodcourt.traceability.infrastructure.output.jpa.repository.OrderStatusChangeJpaRepository;
 
 /**
@@ -52,6 +62,19 @@ public final class OrderStatusChangeRepositoryAdapter implements StatusChangeRep
     }
 
     @Override
+    public PageResult<CompletedInterval> findCompleted(long restaurantId, PageQuery page) {
+        Page<Object[]> rows = reads.execute(status -> changes.findCompleted(
+                restaurantId, PageRequest.of(page.page(), page.size())));
+        return intervals(page, rows);
+    }
+
+    @Override
+    public List<EmployeeTotal> summarizeByEmployee(long restaurantId) {
+        List<Object[]> rows = reads.execute(status -> changes.summarizeByEmployee(restaurantId));
+        return totals(rows);
+    }
+
+    @Override
     public SaveResult save(StatusChange change) {
         try {
             return insert(change);
@@ -63,6 +86,30 @@ public final class OrderStatusChangeRepositoryAdapter implements StatusChangeRep
     private SaveResult insert(StatusChange change) {
         StatusChange stored = writes.execute(status -> mapper.toDomain(changes.saveAndFlush(mapper.toEntity(change))));
         return SaveResult.created(stored);
+    }
+
+    private static PageResult<CompletedInterval> intervals(PageQuery page, Page<Object[]> rows) {
+        List<CompletedInterval> items = new ArrayList<>();
+        int dropped = 0;
+        for (Object[] row : rows.getContent()) {
+            dropped += keep(items, CompletedIntervalRow.from(row));
+        }
+        return new PageResult<>(items, page.page(), page.size(), rows.getTotalElements() - dropped);
+    }
+
+    /** A pair the domain rejects is left out of the page and out of the total. */
+    private static int keep(List<CompletedInterval> items, CompletedIntervalRow row) {
+        Optional<CompletedInterval> interval = row.accept();
+        interval.ifPresent(items::add);
+        return interval.isEmpty() ? 1 : 0;
+    }
+
+    private static List<EmployeeTotal> totals(List<Object[]> rows) {
+        List<EmployeeTotal> totals = new ArrayList<>();
+        for (Object[] row : rows) {
+            totals.add(EmployeeTotalRow.from(row).toTotal());
+        }
+        return List.copyOf(totals);
     }
 
     private SaveResult reload(StatusChange change) {
